@@ -1,19 +1,28 @@
+﻿# Dependencies
 node_modules/
 **/node_modules/
+
+# Build output
 dist/
 **/dist/
 build/
 **/build/
+
+# Environment / secrets
 .env
 .env.*
 !.env.example
-*.log
+
+# Logs
 logs/
 **/logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Cache / tooling output
 .cache/
 **/.cache/
 .vite/
@@ -21,16 +30,28 @@ pnpm-debug.log*
 .parcel-cache/
 .turbo/
 .next/
+.nuxt/
 coverage/
 **/coverage/
+.eslintcache
+
+# Temporary / OS files
 *.tmp
 *.temp
+.tmp/
 Thumbs.db
 .DS_Store
+
+# Local uploads / generated user content
+server/uploads/
+**/uploads/
+
+# Large binary archives and media
 *.zip
 *.tar
 *.tar.gz
 *.tgz
+*.gz
 *.rar
 *.7z
 *.iso
@@ -42,9 +63,9 @@ Thumbs.db
 *.psd
 *.ai
 *.sketch
-server/uploads/
-**/uploads/
-任务提示词.md
-**/任务提示词.md
-任务提示词.md
-**/任务提示词.md
+*.exe
+*.dll
+*.bin
+*.db
+*.sqlite
+*.sqlite3
