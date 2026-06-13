@@ -5,6 +5,7 @@
         <router-link to="/" class="nav-brand">🎁 盲盒交换平台</router-link>
         <div class="nav-links">
           <router-link to="/" class="nav-link" exact-active-class="active">首页</router-link>
+          <router-link to="/calendar" class="nav-link" active-class="active">新品日历</router-link>
           <router-link to="/publish" class="nav-link" active-class="active">发布物品</router-link>
           <router-link to="/my-items" class="nav-link" active-class="active">我的物品</router-link>
           <router-link to="/my-exchanges" class="nav-link" active-class="active">交换记录</router-link>
