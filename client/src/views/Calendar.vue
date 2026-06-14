@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { getItems, appendAuth } from '../api/index.js'
 import { userStore } from '../store/user.js'
 
@@ -152,6 +152,18 @@ function getCategoryColor(category) {
   return categoryColors[category] || '#999'
 }
 
+const itemsByDateMap = computed(() => {
+  const map = {}
+  filteredItems.value.forEach(item => {
+    const dateStr = formatDateKey(new Date(item.createdAt))
+    if (!map[dateStr]) {
+      map[dateStr] = []
+    }
+    map[dateStr].push(item)
+  })
+  return map
+})
+
 const calendarDays = computed(() => {
   const year = currentYear.value
   const month = currentMonth.value
@@ -166,6 +178,7 @@ const calendarDays = computed(() => {
   const days = []
   const today = new Date()
   const todayStr = formatDateKey(today)
+  const map = itemsByDateMap.value
   
   for (let i = startDayOfWeek - 1; i >= 0; i--) {
     const day = prevMonthLastDay - i
@@ -175,7 +188,7 @@ const calendarDays = computed(() => {
       dateStr,
       isCurrentMonth: false,
       isToday: false,
-      items: getItemsByDate(dateStr)
+      items: map[dateStr] || []
     })
   }
   
@@ -186,7 +199,7 @@ const calendarDays = computed(() => {
       dateStr,
       isCurrentMonth: true,
       isToday: dateStr === todayStr,
-      items: getItemsByDate(dateStr)
+      items: map[dateStr] || []
     })
   }
   
@@ -198,7 +211,7 @@ const calendarDays = computed(() => {
       dateStr,
       isCurrentMonth: false,
       isToday: false,
-      items: getItemsByDate(dateStr)
+      items: map[dateStr] || []
     })
   }
   
@@ -207,7 +220,7 @@ const calendarDays = computed(() => {
 
 const selectedDayItems = computed(() => {
   if (!selectedDate.value) return []
-  return getItemsByDate(selectedDate.value)
+  return itemsByDateMap.value[selectedDate.value] || []
 })
 
 function formatDateKey(date) {
@@ -217,11 +230,25 @@ function formatDateKey(date) {
   return `${y}-${m}-${d}`
 }
 
-function getItemsByDate(dateStr) {
-  return filteredItems.value.filter(item => {
-    const itemDate = new Date(item.createdAt)
-    return formatDateKey(itemDate) === dateStr
-  })
+function isDateInCurrentMonth(dateStr) {
+  if (!dateStr) return false
+  const [y, m] = dateStr.split('-').map(Number)
+  return y === currentYear.value && (m - 1) === currentMonth.value
+}
+
+function getDaysInMonth(year, month) {
+  return new Date(year, month + 1, 0).getDate()
+}
+
+function adjustSelectedDate() {
+  if (!selectedDate.value) return
+  
+  if (!isDateInCurrentMonth(selectedDate.value)) {
+    const daysInNewMonth = getDaysInMonth(currentYear.value, currentMonth.value)
+    const [, , oldDay] = selectedDate.value.split('-').map(Number)
+    const newDay = Math.min(oldDay, daysInNewMonth)
+    selectedDate.value = formatDateKey(new Date(currentYear.value, currentMonth.value, newDay))
+  }
 }
 
 function prevMonth() {
@@ -231,6 +258,7 @@ function prevMonth() {
   } else {
     currentMonth.value--
   }
+  adjustSelectedDate()
 }
 
 function nextMonth() {
@@ -240,6 +268,7 @@ function nextMonth() {
   } else {
     currentMonth.value++
   }
+  adjustSelectedDate()
 }
 
 function goToToday() {
@@ -262,6 +291,10 @@ function filterItems() {
     filteredItems.value = items.value.filter(item => item.category === selectedCategory.value)
   }
 }
+
+watch(selectedCategory, () => {
+  filterItems()
+})
 
 async function loadItems() {
   loading.value = true
